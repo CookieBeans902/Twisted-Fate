@@ -94,6 +94,7 @@ private IEnumerator LoadLevel1()
         MenuPanel.SetActive(false);
         InPanels = false;
         displayPanel.SetActive(true);
+        StartCoroutine(LoadLevel());
     }
     public void Revived() {
         dead = false;
@@ -101,6 +102,10 @@ private IEnumerator LoadLevel1()
     }
     public void GameStart() {
         SceneManager.LoadScene("GameStart");
+    }
+    private IEnumerator LoadLevel() {
+        yield return new WaitForSeconds(2);
+        Level1();
     }
     public void Statboostpanel() {
         InPanels = true;
