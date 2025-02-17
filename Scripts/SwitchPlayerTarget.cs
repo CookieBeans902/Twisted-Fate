@@ -6,8 +6,12 @@ public class SwitchTarget : MonoBehaviour
 
 {
     public AIDestinationSetter ai;
-    
-    public void Switch() {
+
+    void Start()
+    {
+        ai = GetComponent<AIDestinationSetter>();
+    }
+    void Update() {
         
         if(GameManager.Instance.character==1) {
             ai.target = GameManager.Instance.LightBanditPosition;
