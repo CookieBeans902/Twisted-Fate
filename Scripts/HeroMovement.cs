@@ -1,5 +1,6 @@
     using TMPro;
     using UnityEngine;
+    using System.Collections;
 
     public class HeroMovement : MonoBehaviour
     {
@@ -16,6 +17,7 @@
         animator = GetComponent<Animator>();
         // GameManager.Instance.HeroKnight = gameObject;
         // GameManager.Instance.KnightPosition = gameObject.transform;
+        StartCoroutine(MovementFix());
     }
     // Update is called once per frame
     void Update()
@@ -59,5 +61,13 @@
                 player.linearVelocityX = 0f;
                 player.linearVelocityY = 0f;
             }
+        }
+        IEnumerator MovementFix() {
+        while(true) {
+         if(!animator.GetBool("isjumping") && !animator.GetBool("isattacking")) {
+            CanMove = true;
+        }
+        yield return new WaitForSeconds(0.5f);
+        }
         }
     }
