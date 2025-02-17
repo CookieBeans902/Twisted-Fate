@@ -14,15 +14,17 @@ public class GameManager : MonoBehaviour
     [SerializeField] GameObject displayPanel;
     [SerializeField] GameObject MenuPanel;
     [SerializeField] GameObject ErrorPanel;
+    [SerializeField] GameObject EscapePanel;
     [SerializeField] GameObject StatBoostPanel;
     [SerializeField] GameObject CharacterPanel;
     [SerializeField] GameObject EndPanel;
     [SerializeField] GameObject WinPanel;
+    [SerializeField] GameObject DialoguePanel;
     public bool InPanels = true;
     public int PlayerHealth=200;
     public int character = 1;
-    public GameObject LightBandit;
     public bool Level1Loaded = false;
+    public GameObject LightBandit;
     public GameObject HeavyBandit;
     public GameObject HeroKnight;
     public Transform LightBanditPosition;
@@ -32,6 +34,7 @@ public class GameManager : MonoBehaviour
     public bool dead = false;
     public bool SpawnEnemies = false;
     public bool hasSpawned = false;
+    public bool dialoguecomplete = false;
     public int coinBalance=0;
     private IEnumerator Error() {
         ErrorPanel.SetActive(true);
@@ -52,7 +55,7 @@ private IEnumerator LoadLevel1()
     {
         yield return null;
     }
-
+    Debug.Log("Level 1 Loaded");
     // Now set the active scene
     SceneManager.SetActiveScene(SceneManager.GetSceneByName("Level 1"));
 
@@ -104,7 +107,7 @@ private IEnumerator LoadLevel1()
         SceneManager.LoadScene("GameStart");
     }
     private IEnumerator LoadLevel() {
-        yield return new WaitForSeconds(2);
+        yield return new WaitForSeconds(0.1f);
         Level1();
     }
     public void Statboostpanel() {
@@ -112,6 +115,31 @@ private IEnumerator LoadLevel1()
         Time.timeScale = 0f;
         displayPanel.SetActive(false);
         StatBoostPanel.SetActive(true);
+    }
+    public void Dialogue() {
+        if(dialoguecomplete) {
+            return;
+        }
+        StartCoroutine(DialogueWait());
+    }
+    IEnumerator DialogueWait() {
+        InPanels = true;
+        Time.timeScale = 0f;
+        // displayPanel.SetActive(false);
+        DialoguePanel.SetActive(true);
+        dialoguecomplete = true;
+        yield return new WaitForSecondsRealtime(3f);
+        Time.timeScale = 1f;
+        DialoguePanel.SetActive(false);
+        // displayPanel.SetActive(true);
+        Time.timeScale = 1f;
+        InPanels = false;
+    }
+    public void ExitDialogue() {
+        InPanels = false;
+        Time.timeScale = 1f;
+        DialoguePanel.SetActive(false);
+        displayPanel.SetActive(true);
     }
     public void ExitStatboostpanel() {
         InPanels = false;
@@ -129,7 +157,7 @@ private IEnumerator LoadLevel1()
         }
         else {
         coinBalance-=2000;
-        LightBandit.SetActive(true);
+        Revived();
         if(character==3)
         {
             LightBanditPosition.position = HeroKnight.transform.position;
@@ -141,8 +169,11 @@ private IEnumerator LoadLevel1()
         LightBandit.SetActive(true);
         HeavyBandit.SetActive(false);
         HeroKnight.SetActive(false);
+        InPanels = false;
+        CharacterPanel.SetActive(false);
+        displayPanel.SetActive(true);
         character = 1;
-        Revived();
+        StartCoroutine(Invinc());
         }
     }
     public void Character2() {
@@ -152,6 +183,7 @@ private IEnumerator LoadLevel1()
         }
         else {
         coinBalance-=5000;
+        Revived();
         if(character==1) {
             HeavyBanditPosition.position = LightBanditPosition.position;
         }
@@ -161,8 +193,11 @@ private IEnumerator LoadLevel1()
         HeavyBandit.SetActive(true);
         LightBandit.SetActive(false);
         HeroKnight.SetActive(false);
+        InPanels = false;
+        CharacterPanel.SetActive(false);
+        displayPanel.SetActive(true);
         character=2;
-        Revived();
+        StartCoroutine(Invinc());
         }
     }
     public void Character3() {
@@ -172,6 +207,7 @@ private IEnumerator LoadLevel1()
         }
         else {
         coinBalance-=10000;
+        Revived();
         if(character==1) {
             KnightPosition.position = LightBanditPosition.position;
         }
@@ -181,10 +217,18 @@ private IEnumerator LoadLevel1()
         HeroKnight.SetActive(true);
         LightBandit.SetActive(false);
         HeavyBandit.SetActive(false);
+        InPanels = false;
+        CharacterPanel.SetActive(false);
+        displayPanel.SetActive(true);
         character = 3;
-        Revived();
+        StartCoroutine(Invinc());
         }
     }
+    IEnumerator Invinc() {
+            invincible = true;
+            yield return new WaitForSeconds(3f);
+            invincible = false;
+        }
     void Awake()
     {
         if (Instance == null) // If no instance exists, assign this as the instance
@@ -198,27 +242,46 @@ private IEnumerator LoadLevel1()
         }
         displayPanel.SetActive(false);
         MenuPanel.SetActive(true);
+        PlayerHealth = 200;
+        dialoguecomplete = false;
     }
     void Start()
     {
+        Debug.Log("Game Manager Started");
         GameStart();
+        displayPanel.SetActive(false);
         MenuPanel.SetActive(true);
         InPanels = true;
         StatBoostPanel.SetActive(false);
         CharacterPanel.SetActive(false);
         SceneManager.UnloadSceneAsync("Level 1");
+        hasSpawned = false;
     }
     void Update()
     {
-        if(coinBalance>=30000) {
+        if(coinBalance>=20000) {
             InPanels = true;
             displayPanel.SetActive(false);
             WinPanel.SetActive(true);
         }
-        else if(Level1Loaded&&coinBalance<30000&&!hasSpawned) {
+        else if(Level1Loaded&&coinBalance<20000&&!hasSpawned) {
             SpawnEnemies = true;
             EnemySpawn.Instance.Spawn();
             hasSpawned = true;
+        }
+        if(Input.GetKeyDown(KeyCode.Escape)) {
+            if(InPanels) {
+                InPanels = false;
+                Time.timeScale = 1f;
+                displayPanel.SetActive(true);
+                EscapePanel.SetActive(false);
+            }
+            else {
+                InPanels = true;
+                Time.timeScale = 0f;
+                displayPanel.SetActive(false);
+                EscapePanel.SetActive(true);
+            }
         }
     }
 }
