@@ -1,7 +1,6 @@
 using System.Collections;
 using Pathfinding;
 using Unity.Collections;
-using UnityEditor.Callbacks;
 using UnityEngine;
 
 public class Enemy : MonoBehaviour
@@ -25,22 +24,16 @@ public class Enemy : MonoBehaviour
     }
     void Start()
     {
-        if(gameObject.CompareTag("Dino")) {
-            CurrentHealth = 5*MaximumHealth;
-            coinadd = 500;
-            attackDamage = 4*attackDamage;
-        }
-        else if(gameObject.CompareTag("Skull")) {
+        if(gameObject.CompareTag("Skull")) {
             CurrentHealth = 2*MaximumHealth;
-            attackDamage = 2*attackDamage;
-            coinadd = 250;
+            coinadd = 500;
         }
         else if(gameObject.CompareTag("Bat")) {
             CurrentHealth = 1*MaximumHealth;
-            coinadd = 100;
+            rb = GetComponent<Rigidbody2D>();
+            coinadd = 200;
         }
         anim = GetComponent<Animator>();
-        rb = GetComponentInParent<Rigidbody2D>();
         circle = GetComponent<CircleCollider2D>();
     }
     public void TakeDamage(int a) {
@@ -54,7 +47,9 @@ public class Enemy : MonoBehaviour
     }
     void OnDeath() {
         GameManager.Instance.AddCoins(coinadd);
-        gameObject.SetActive(false);
+        gameObject.GetComponentInParent<AIPath>().enabled = false;
+        GameObject parent = GetComponentInParent<Transform>().gameObject;
+        Destroy(parent);
     }
     void OnDeathBody() {
         GameManager.Instance.AddCoins(coinadd);
@@ -63,6 +58,8 @@ public class Enemy : MonoBehaviour
         enemydeath=true;
         gameObject.layer = 8;
         Physics2D.IgnoreLayerCollision(gameObject.layer, 7, true);
+        Physics2D.IgnoreLayerCollision(gameObject.layer, 8, true);
+        Physics2D.IgnoreLayerCollision(gameObject.layer, 6, true);
     }
     void Update()
     {
@@ -78,7 +75,7 @@ public class Enemy : MonoBehaviour
             gameObject.GetComponentInParent<AIDestinationSetter>().enabled = false;
         }
         Collider2D attackplayer = Physics2D.OverlapCircle(transform.position,2.5f,playerLayer);
-        if(attackplayer!=null) {
+        if(attackplayer!=null&&!GameManager.Instance.invincible) {
             Attack();
         }
     }
