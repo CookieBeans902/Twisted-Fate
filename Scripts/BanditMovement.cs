@@ -1,4 +1,4 @@
-    using TMPro;
+using System.Collections;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -12,12 +12,12 @@ using UnityEngine;
         public float speed = 40f;
         bool jump;
         public bool CanMove=true;
-        Transform lockedPosition;
     void Start()
     {
         animator = GetComponent<Animator>();
         // GameManager.Instance.LightHeavyBandit = gameObject;
         // GameManager.Instance.BanditPosition = gameObject.transform;
+        StartCoroutine(MovementFix());
     }
     // Update is called once per frame
     void Update()
@@ -37,8 +37,15 @@ using UnityEngine;
                 jump = true;
                 animator.SetBool("isjumping",true);
             }
-            
         }
+    IEnumerator MovementFix() {
+        while(true) {
+         if(!animator.GetBool("isjumping") && !animator.GetBool("isattacking")) {
+            CanMove = true;
+        }
+        yield return new WaitForSeconds(0.5f);
+        }
+    }
     public void Onlanding() {
             animator.SetBool("isjumping",false);
         }
